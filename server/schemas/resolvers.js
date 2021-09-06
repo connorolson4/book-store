@@ -1,9 +1,9 @@
 const { User } = require('../models');
-
+const { signToken } = require('../utils/auth')
 const resolvers = {
     Query: {
        me: async (parent, args, context) => {
-               return User.findOne( { _id: context.user._id}).populate('books');
+               return User.findOne( { _id: context.user._id}) ;
        },
     },
 
@@ -30,19 +30,20 @@ const resolvers = {
     
           return { token, user };
         },
-        saveBook: async (parent, { saveBookContent, token}) => {
+        saveBook: async (parent, { input },context) => {
+          console.log(input, context.user)
             if (context.user) {
                 return User.findOneAndUpdate(
-                    {token: token},
-                    {$addToSet: { savedBooks: saveBookContent}},
+                    {_id: context.user._id},
+                    {$addToSet: { savedBooks: input}},
                     {new: true}
                 )
             }
         },
-        removeBook: async (parent, { bookId, token}) => {
+        removeBook: async (parent, { bookId, token}, context) => {
                 return User.findOneAndUpdate(
-                    {token: token},
-                    {$pull: {savedBooks: {bookId: bookId}}},
+                  {_id: context.user._id},
+                    {$pull: {savedBooks: {_id: bookId}}},
                     {new: true}
                 )
         },
